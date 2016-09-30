@@ -7,4 +7,5 @@
     <dimen name="music_title">25sp</dimen>
     <dimen name="containt">20sp</dimen>
     <dimen name="containt_padding">10sp</dimen>
+    <dimen name="player_margin">10sp</dimen>
 </resources>
