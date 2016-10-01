@@ -23,7 +23,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         playerListRecycle = (RecyclerView) findViewById(R.id.player_list_recycle);
-        playerListRecycle.setHasFixedSize(true);
         layoutManager = new LinearLayoutManager(this);
         playerListRecycle.setLayoutManager(layoutManager);
 
