@@ -33,12 +33,19 @@
                 android:layout_weight="1"/>
 
             <TextView
-                android:text="TextView"
+                android:text="@string/none_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/content"
                 android:textSize="@dimen/containt"
                 android:padding="@dimen/containt_padding"
+                android:layout_weight="1"/>
+
+            <ImageButton
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:srcCompat="@android:drawable/arrow_down_float"
+                android:id="@+id/down_button"
                 android:layout_weight="1"/>
 
             <SeekBar
@@ -76,10 +83,10 @@
 
                 <ImageButton
                     android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    app:srcCompat="@android:drawable/arrow_down_float"
-                    android:id="@+id/down_button"
-                    android:layout_weight="0.99"/>
+                    android:layout_height="wrap_content"
+                    app:srcCompat="@android:drawable/ic_input_get"
+                    android:id="@+id/choose_content"
+                    android:layout_weight="0.99" />
 
                 <ImageButton
                     android:layout_width="wrap_content"

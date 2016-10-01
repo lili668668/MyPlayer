@@ -2,4 +2,6 @@
     <string name="app_name">雙撥放器</string>
     <string name="action_settings">設定</string>
     <string name="title_activity_play_list">PlayListActivity</string>
+
+    <string name="none_content">無內容</string>
 </resources>

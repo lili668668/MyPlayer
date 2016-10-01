@@ -64,62 +64,83 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
-        final Player player = players.get(position);
+        Player player = players.get(position);
 
         holder.playerTitle.setText(player.title);
         holder.musicTitle.setText(player.nowMusic.title);
 
-        if (player.file == null) {
+        if (player.file == null || !player.isFileShow) {
             holder.content.setVisibility(View.GONE);
         } else {
             holder.content.setVisibility(View.VISIBLE);
             holder.content.setText(player.file.content);
         }
 
-        holder.runController.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-
-            }
-
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-
-            }
-
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                int position = seekBar.getProgress();
-                int where = player.nowMusicLength * position / seekBar.getMax();
-                player.getMediaPlayer().seekTo(where);
-            }
-        });
+        holder.runController.setOnSeekBarChangeListener(new RunControlListener(player));
 
         holder.nowTime.setText(TimeManager.milliSecondsToTimer(player.getMediaPlayer().getCurrentPosition()));
         holder.maxTime.setText(TimeManager.milliSecondsToTimer(player.nowMusicLength));
 
-        holder.downButton.setOnClickListener(new View.OnClickListener(){
-
-            @Override
-            public void onClick(View v) {
-                if (player.isPlay) {
-                    player.isPlay = false;
-
-                    ImageButton b = (ImageButton) v;
-                    b.setImageResource(android.R.drawable.ic_media_pause);
-                } else {
-                    player.isPlay = true;
-
-                    ImageButton b = (ImageButton) v;
-                    b.setImageResource(android.R.drawable.ic_media_play);
-                }
-            }
-        });
+        holder.downButton.setOnClickListener(new DownButtonClickListener(player, holder.content));
 
     }
 
     @Override
     public int getItemCount() {
         return players.size();
+    }
+
+    class RunControlListener implements SeekBar.OnSeekBarChangeListener {
+        Player player;
+
+        public RunControlListener(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+            int position = seekBar.getProgress();
+            int where = player.nowMusicLength * position / seekBar.getMax();
+            player.getMediaPlayer().seekTo(where);
+        }
+    }
+
+    class DownButtonClickListener implements View.OnClickListener {
+        Player player;
+        TextView content;
+
+        public DownButtonClickListener(Player player, TextView content) {
+            this.player = player;
+            this.content = content;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (player.isFileShow) {
+                player.isFileShow = false;
+
+                ImageButton b = (ImageButton) v;
+                b.setImageResource(android.R.drawable.arrow_down_float);
+
+                content.setVisibility(View.GONE);
+            } else {
+                player.isFileShow = true;
+
+                ImageButton b = (ImageButton) v;
+                b.setImageResource(android.R.drawable.arrow_up_float);
+
+                content.setVisibility(View.VISIBLE);
+            }
+        }
     }
 }

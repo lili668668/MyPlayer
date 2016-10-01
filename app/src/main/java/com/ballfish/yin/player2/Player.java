@@ -11,7 +11,9 @@ import java.util.ArrayList;
 
 public class Player {
     public String title;
+
     public FileInfo file;
+    public boolean isFileShow;
 
     public ArrayList<MusicInfo> list;
     public MusicInfo nowMusic;
