@@ -11,6 +11,6 @@ public class FileInfo {
         String[] tmp = filePath.split("/");
         this.title = tmp[tmp.length-1].split("\\.")[0];
 
-        content = Reader.Read(this);
+        content = FileReader.Read(this);
     }
 }

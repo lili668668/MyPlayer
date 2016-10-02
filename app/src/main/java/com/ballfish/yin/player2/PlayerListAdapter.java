@@ -1,23 +1,31 @@
 package com.ballfish.yin.player2;
 
-import android.content.Context;
+import android.app.Activity;
+import android.content.Intent;
+import android.media.AudioManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.ballfish.utility.FileChooser;
 import com.ballfish.utility.TimeManager;
 
 import java.util.ArrayList;
 
 public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.ViewHolder> {
-    private static Context context;
+    private Activity activity;
 
     private ArrayList<Player> players;
+
+    public PlayerListAdapter(Activity activity, ArrayList<Player> players) {
+        this.activity = activity;
+        this.players = players;
+    }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView playerTitle;
@@ -27,6 +35,7 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
         TextView nowTime;
         TextView maxTime;
         ImageButton downButton;
+        ImageButton chooseContent;
         ImageButton listButton;
         ImageButton lastButton;
         ImageButton playButton;
@@ -45,6 +54,7 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
             nowTime = (TextView) itemView.findViewById(R.id.now_time);
             maxTime = (TextView) itemView.findViewById(R.id.max_time);
             downButton = (ImageButton) itemView.findViewById(R.id.down_button);
+            chooseContent = (ImageButton) itemView.findViewById(R.id.choose_content);
             listButton = (ImageButton) itemView.findViewById(R.id.list_button);
             lastButton = (ImageButton) itemView.findViewById(R.id.last_button);
             playButton = (ImageButton) itemView.findViewById(R.id.play_button);
@@ -67,7 +77,7 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
         Player player = players.get(position);
 
         holder.playerTitle.setText(player.title);
-        holder.musicTitle.setText(player.nowMusic.title);
+        holder.musicTitle.setText(player.getNowMusic().title);
 
         if (player.file == null || !player.isFileShow) {
             holder.content.setVisibility(View.GONE);
@@ -81,7 +91,22 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
         holder.nowTime.setText(TimeManager.milliSecondsToTimer(player.getMediaPlayer().getCurrentPosition()));
         holder.maxTime.setText(TimeManager.milliSecondsToTimer(player.nowMusicLength));
 
-        holder.downButton.setOnClickListener(new DownButtonClickListener(player, holder.content));
+        holder.downButton.setOnClickListener(new DownButtonClick(player, holder.content));
+
+        holder.chooseContent.setOnClickListener(new ChooseContentClick(activity, position));
+
+        holder.listButton.setOnClickListener(new ListButtonClick(activity, players, position));
+
+        holder.lastButton.setOnClickListener(new LastButtonClick(player, player.getNowMusicPosition()));
+        holder.playButton.setOnClickListener(new PlayButtonClick(player));
+        holder.nextButton.setOnClickListener(new NextButtonClick(player, player.getNowMusicPosition()));
+
+        holder.modeButton.setOnClickListener(new ModeButtonClick(player));
+
+        holder.volButton.setOnClickListener(new volButtonClick(holder.volController));
+        holder.volController.setMax(player.getAudioManager().getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        holder.volController.setProgress(player.getAudioManager().getStreamMaxVolume(AudioManager.STREAM_MUSIC));
+        holder.volController.setOnSeekBarChangeListener(new volControlListener(player));
 
     }
 
@@ -115,11 +140,11 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
         }
     }
 
-    class DownButtonClickListener implements View.OnClickListener {
+    class DownButtonClick implements View.OnClickListener {
         Player player;
         TextView content;
 
-        public DownButtonClickListener(Player player, TextView content) {
+        public DownButtonClick(Player player, TextView content) {
             this.player = player;
             this.content = content;
         }
@@ -141,6 +166,171 @@ public class PlayerListAdapter extends RecyclerView.Adapter<PlayerListAdapter.Vi
 
                 content.setVisibility(View.VISIBLE);
             }
+        }
+    }
+
+    class ChooseContentClick implements View.OnClickListener{
+        Activity activity;
+        int playerId;
+        public ChooseContentClick(Activity activity, int playerId) {
+            this.activity = activity;
+            this.playerId = playerId;
+        }
+
+        @Override
+        public void onClick(View v) {
+            FileChooser fileChooser = new FileChooser(activity);
+            if (!fileChooser.showFileChooser("text/plain", activity.getString(R.string.choose_file), new Integer(playerId))) {
+                Toast.makeText(activity, R.string.none_file, Toast.LENGTH_SHORT).show();
+            }
+        }
+        // TODO:add onActivityResult in mainActivity
+    }
+
+    class ListButtonClick implements View.OnClickListener{
+        Activity activity;
+        ArrayList<Player> players;
+        int playerId;
+
+        public ListButtonClick(Activity activity, ArrayList<Player> players, int playerId) {
+            this.activity = activity;
+            this.players = players;
+            this.playerId = playerId;
+        }
+
+        @Override
+        public void onClick(View v) {
+            try {
+                Intent intent = new Intent(activity, PlayListActivity.class);
+                intent.putExtra("players", players);
+                intent.putExtra("playerId", playerId);
+                activity.startActivity(intent);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                Toast.makeText(activity, "Play List Error", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    class LastButtonClick implements View.OnClickListener {
+        Player player;
+        int musicPosition;
+        public LastButtonClick(Player player, int musicPosition) {
+            this.player = player;
+            this.musicPosition = musicPosition;
+        }
+
+        @Override
+        public void onClick(View v) {
+            player.pause();
+            player.setNowMusic(musicPosition - 1);
+            player.play();
+        }
+    }
+
+    class PlayButtonClick implements View.OnClickListener {
+        Player player;
+
+        public PlayButtonClick(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onClick(View v) {
+            ImageButton button = (ImageButton) v;
+            if (player.isPlay) {
+                player.pause();
+
+                button.setImageResource(android.R.drawable.ic_media_pause);
+            } else {
+                player.play();
+
+                button.setImageResource(android.R.drawable.ic_media_play);
+            }
+
+        }
+    }
+
+    class NextButtonClick implements View.OnClickListener {
+        Player player;
+        int musicPosition;
+        public NextButtonClick(Player player, int musicPosition) {
+            this.player = player;
+            this.musicPosition = musicPosition;
+        }
+
+        @Override
+        public void onClick(View v) {
+            player.pause();
+            player.setNowMusic(musicPosition + 1);
+            player.play();
+        }
+    }
+
+    class ModeButtonClick implements  View.OnClickListener {
+        Player player;
+        public ModeButtonClick(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onClick(View v) {
+            // TODO: add mode implement
+            switch (player.mode) {
+                case Player.Mode.PLAY_ONCE_ONE:
+                    break;
+                case Player.Mode.PLAY_ONCE_ALL:
+                    break;
+                case Player.Mode.REPLAY_ONE:
+                    break;
+                case Player.Mode.REPLAY_ALL:
+                    break;
+                case Player.Mode.CURSOR_PLAY_ONCE:
+                    break;
+                case Player.Mode.CIRSOR_REPLAY:
+                    break;
+            }
+
+        }
+    }
+
+    class volButtonClick implements View.OnClickListener{
+        SeekBar volController;
+
+        public volButtonClick(SeekBar volController) {
+            this.volController = volController;
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (volController.getVisibility() == View.GONE) {
+                volController.setVisibility(View.VISIBLE);
+            } else {
+                volController.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    class volControlListener implements SeekBar.OnSeekBarChangeListener{
+        Player player;
+
+        public volControlListener(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            player.getAudioManager().setStreamVolume(AudioManager.STREAM_MUSIC, progress, 0);
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {
+
+        }
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {
+
         }
     }
 }

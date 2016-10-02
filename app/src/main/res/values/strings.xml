@@ -4,4 +4,7 @@
     <string name="title_activity_play_list">PlayListActivity</string>
 
     <string name="none_content">無內容</string>
+
+    <string name="none_file">無選取文件</string>
+    <string name="choose_file">請選取文件</string>
 </resources>

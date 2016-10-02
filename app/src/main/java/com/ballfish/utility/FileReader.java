@@ -3,10 +3,10 @@ package com.ballfish.utility;
 import java.io.File;
 import java.util.Scanner;
 
-public class Reader {
+public class FileReader {
     public static String Read(String path) {
         String result = "";
-        if (!Checker.IsExist(path) || !Checker.CanRead(path)) {
+        if (!FileChecker.IsExist(path) || !FileChecker.CanRead(path)) {
             return null;
         }
         try {

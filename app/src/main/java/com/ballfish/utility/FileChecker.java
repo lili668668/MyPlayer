@@ -2,7 +2,7 @@ package com.ballfish.utility;
 
 import java.io.File;
 
-public class Checker {
+public class FileChecker {
     public static boolean IsExist(String path) {
         File f = new File(path);
         return f.exists();
